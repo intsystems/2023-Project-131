@@ -16,143 +16,66 @@
 
 
 
-\title{A template for the \emph{arxiv} style}
+\title{Итеративное улучшение тематической модели с обратной связью от пользователя}
 
-\author{ David S.~Hippocampus\thanks{Use footnote for providing further
-		information about author (webpage, alternative
-		address)---\emph{not} for acknowledging funding agencies.} \\
-	Department of Computer Science\\
-	Cranberry-Lemon University\\
-	Pittsburgh, PA 15213 \\
-	\texttt{hippo@cs.cranberry-lemon.edu} \\
-	%% examples of more authors
+\author{ Горбулев Алексей Ильич \\
+	\texttt{gorbulev.ai@phystech.edu} \\
 	\And
-	Elias D.~Striatum \\
-	Department of Electrical Engineering\\
-	Mount-Sheikh University\\
-	Santa Narimana, Levand \\
-	\texttt{stariate@ee.mount-sheikh.edu} \\
-	%% \AND
-	%% Coauthor \\
-	%% Affiliation \\
-	%% Address \\
-	%% \texttt{email} \\
-	%% \And
-	%% Coauthor \\
-	%% Affiliation \\
-	%% Address \\
-	%% \texttt{email} \\
-	%% \And
-	%% Coauthor \\
-	%% Affiliation \\
-	%% Address \\
-	%% \texttt{email} \\
+	Алексеев Василий Антонович \\
+	\texttt{vasiliy.alekseyev@phystech.edu} \\
+	\And
+    Воронцов Константин Вячеславович \\
+    \texttt{vokov@forecsys.ru} \\
 }
 \date{}
 
-\renewcommand{\shorttitle}{\textit{arXiv} Template}
+\renewcommand{\undertitle}{}
+\renewcommand{\shorttitle}{Итеративное улучшение тематической модели с обратной связью от пользователя}
 
 %%% Add PDF metadata to help others organize their library
 %%% Once the PDF is generated, you can check the metadata with
 %%% $ pdfinfo template.pdf
-\hypersetup{
-pdftitle={A template for the arxiv style},
-pdfsubject={q-bio.NC, q-bio.QM},
-pdfauthor={David S.~Hippocampus, Elias D.~Striatum},
-pdfkeywords={First keyword, Second keyword, More},
-}
+%%% \hypersetup{
+%%% pdftitle={A template for the arxiv style},
+%%% pdfsubject={q-bio.NC, q-bio.QM},
+%%% pdfauthor={David S.~Hippocampus, Elias D.~Striatum},
+%%% pdfkeywords={First keyword, Second keyword, More},
+%%% }
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-	\lipsum[1]
+	В работе решается задача тематического моделирования с использованием обратной связи от пользователя. Обратная связь заключается в определении принадлежности темы к одной из трёх категорий: релевантная, нерелевантная, «мусорная». Требуется использовать на каждой итерации пользовательскую разметку таким образом, чтобы сохранить существующие релевантные темы и выделить новые релевантные темы из нерелевантных и «мусорных» при существующей возможности. В работе предлагается решение с использованием библиотек тематического моделирования с открытым исходным кодом BigARTM и TopicNet и регуляризаторов сглаживания и декоррелирования. Вычислительный эксперимент проводится на наборе текстов 20 Newsgroups.
 \end{abstract}
 
 
-\keywords{First keyword \and Second keyword \and More}
+\keywords{Машинное обучение \and Анализ данных \and Обработка естественного языка \and Тематическое моделирование \and ARTM}
 
-\section{Introduction}
-\lipsum[2]
-\lipsum[3]
+\section{Введение}
+Одним из методов анализа текстов, который применяется в том числе в социологических исследованиях и активно развивается в последнее время, является тематическое моделирование. Данная технология помогает оценить вероятность принадлежности текста к каждой из предполагаемых тем. Именно вероятностное тематическое моделирование использовалось при исследовании распространения информации о пандемии COVID-19 в Хорватии \citep{pandemic2021}, освещения в средствах массовых информации Литвы климатических изменений \citep{climate2021} и иных работах.
 
-\section{Headings: first level}
-\label{sec:headings}
+Однако задача построения вероятностной тематической модели имеет бесконечно много решений \citep{bigartm}, что предоставляет возможность с помощью различных регуляризаторов учесть особенности данных и тем самым создать модель, которая подходит именно под специфику данного набора текстов. В то же время, не все темы могут оказаться подходящими в контексте проводимого исследования, вследствие чего коллекция текстов, которые по содержанию могут быть релевантными, может уменьшиться за счёт документов, которые отнесены к нерелевантной теме, но тем не менее могут содержать важную информацию, что может сделать само исследование менее полным и менее качественным.
 
-\lipsum[4] See Section \ref{sec:headings}.
+Целью данного исследования является построение обновляемой тематической модели с использованием обратной связи от пользователя, с помощью которой как можно большее число текстов было бы отнесено к релевантным темам. Обратная связь симулирует поведение пользователя, который относит каждую из тем к одной из трёх категорий: релевантные темы, нерелевантные темы и «мусорные» темы. На каждой итерации обновление модели основывается на пользовательской разметке таким образом, чтобы сохранить уже существующие релевантные темы, а из иных тем по возможности выделить новые релевантные темы, и уменьшить количество тем, которые не относятся ни к релевантным, ни к нерелевантным.
 
-\subsection{Headings: second level}
-\lipsum[5]
-\begin{equation}
-	\xi _{ij}(t)=P(x_{t}=i,x_{t+1}=j|y,v,w;\theta)= {\frac {\alpha _{i}(t)a^{w_t}_{ij}\beta _{j}(t+1)b^{v_{t+1}}_{j}(y_{t+1})}{\sum _{i=1}^{N} \sum _{j=1}^{N} \alpha _{i}(t)a^{w_t}_{ij}\beta _{j}(t+1)b^{v_{t+1}}_{j}(y_{t+1})}}
-\end{equation}
+Объектом данного исследования являются методы тематического моделирования, алгоритмы пользовательской разметки тем и итеративного обновления моделей.
 
-\subsubsection{Headings: third level}
-\lipsum[6]
+Для решения задачи используются в том числе и методы аддитивной регуляризации тематических моделей (ARTM), реализованные в библиотеках с открытым кодом \texttt{BigARTM} и \texttt{TopicNet}, которые включают в себя регуляризаторы декоррелирования и сглаживания. Именно подход ARTM способствует оптимизации моделей по сумме нескольких критериев \citep{artm}, что помогает учитывать особенности коллекции текстов и сделать саму модель более устойчивой. В качестве набора текстовых данных используется известная коллекция 20 Newsgroups, которая содержит около $18$ тысяч сообщений, разделённых по $20$ темам.
 
-\paragraph{Paragraph}
-\lipsum[7]
+\section{Постановка задачи}
 
+Пусть $A$ — коллекция текстов, $T_i$ — множество тем на итерации $i \in \mathbb{N}$, $T_i^1 \subset T_i$ — подмножество релевантных тем с точки зрения пользователя, $T_i^2 \subset T_i$ — подмножество нерелевантных тем с точки зрения пользователя, $T_i^3 \subset T_i$ — подмножество «мусорных» тем с точки зрения пользователя, при этом $T_i = \sqcup_{k = 1}^3 T_i^k$, $M_i$ — состояние модели на итерации $i$. Тогда итеративное улучшение модели $M_i$ состоит в построении модели $M_{i + 1}$, такой, чтобы множество тем $T_{i + 1}$ удовлетворяло следующим требованиям:
 
+$$T_i^1 \subset T_{i + 1}^1, \ \left| T_{i + 1}^3 \right| \leq \left| T_i^3 \right|$$
 
-\section{Examples of citations, figures, tables, references}
-\label{sec:others}
+Если $\left| T_i^3 \right| \leq K$, где $K$ — ограничение на количество «мусорных» тем, то тогда $M_{i + 1} = M_i$. Иначе строится новая модель $M_{i + 1}$.
 
-\subsection{Citations}
-Citations use \verb+natbib+. The documentation may be found at
-\begin{center}
-	\url{http://mirrors.ctan.org/macros/latex/contrib/natbib/natnotes.pdf}
-\end{center}
+Темой для документа $a \in A$ называется элемент $f(a) \in T_i$, определённый по правилу $$f(a) = \arg \max \limits_{k \in  \overline{1, |T_i|} M_i^k (a)}$$
 
-Here is an example usage of the two main commands (\verb+citet+ and \verb+citep+): Some people thought a thing \citep{kour2014real, hadash2018estimate} but other people thought something else \citep{kour2014fast}. Many people have speculated that if we knew exactly why \citet{kour2014fast} thought this\dots
+Здесь $k$ отвечает за координату вектора $M_i (a)$, который представляет собой выход модели $M_i$.
 
-\subsection{Figures}
-\lipsum[10]
-See Figure \ref{fig:fig1}. Here is how you add footnotes. \footnote{Sample of the first footnote.}
-\lipsum[11]
-
-\begin{figure}
-	\centering
-	\includegraphics[width=0.5\textwidth]{../figures/log_reg_cs_exp.eps}
-	\caption{Sample figure caption.}
-	\label{fig:fig1}
-\end{figure}
-
-\subsection{Tables}
-See awesome Table~\ref{tab:table}.
-
-The documentation for \verb+booktabs+ (`Publication quality tables in LaTeX') is available from:
-\begin{center}
-	\url{https://www.ctan.org/pkg/booktabs}
-\end{center}
-
-
-\begin{table}
-	\caption{Sample table title}
-	\centering
-	\begin{tabular}{lll}
-		\toprule
-		\multicolumn{2}{c}{Part}                   \\
-		\cmidrule(r){1-2}
-		Name     & Description     & Size ($\mu$m) \\
-		\midrule
-		Dendrite & Input terminal  & $\sim$100     \\
-		Axon     & Output terminal & $\sim$10      \\
-		Soma     & Cell body       & up to $10^6$  \\
-		\bottomrule
-	\end{tabular}
-	\label{tab:table}
-\end{table}
-
-\subsection{Lists}
-\begin{itemize}
-	\item Lorem ipsum dolor sit amet
-	\item consectetur adipiscing elit.
-	\item Aliquam dignissim blandit est, in dictum tortor gravida eget. In ac rutrum magna.
-\end{itemize}
-
-
-\bibliographystyle{unsrtnat}
-\bibliography{references}
+\bibliographystyle{plain}
+\bibliography{Gorbulev2023TopicModels}
 
 \end{document}
