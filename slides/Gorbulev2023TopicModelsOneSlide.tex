@@ -13,6 +13,7 @@
 \usepackage{multicol}% many columns in slide
 \usepackage{hyperref}% urls
 \usepackage{hhline}%tables
+
 % Your figures are here:
 \graphicspath{ {../fig/} }
 
@@ -34,23 +35,23 @@
 \maketitle
 \end{frame}
 %-----------------------------------------------------------------------------------------------------
-\begin{frame}{Доклад с одним слайдом}
+\begin{frame}{Итеративное улучшение модели}
 
-\begin{columns}[c]
-\column{0.6\textwidth}
-\includegraphics[width=1.0\textwidth]{figures/topickernel_bigram_size.png}
-    
-\column{0.4\textwidth}
-    Используемые библиотеки:
-    \begin{itemize}
-        \item BigARTM
-        \item TopicNet
+{\footnotesize \textbf{Мотивация:} большая часть тем может вообще быть не связана с исследованием, который проводит пользователь}
+
+{\footnotesize \textbf{Цель:} улучшить тематическую модель, сохранив ранее найденные релевантные темы, найти новые релевантные темы за счёт других}
+
+{\footnotesize \textbf{Решение:} при обучении новой тематической модели:}
+\begin{itemize}
+        \item {\footnotesize при инициализации матрицы $\Phi$ зафиксировать столбцы, соответствующие релевантным темам}
+        \item {\footnotesize использовать аддитивную регуляризацию тематической модели (ARTM):}
+        \begin{itemize}
+            \item {\footnotesize использовать регуляризатор декоррелирования, чтобы уменьшить число дублирования тем $$R(\Phi) = - \frac{\tau}{2} \sum \limits_{t \in T} \sum \limits_{s \in T \setminus t} \sum \limits_{w \in W} \varphi_{wt} \varphi_{ws}$$}
+            \item {\footnotesize использовать регуляризаторы сглаживания и разреживания для улучшения интерпретируемости тем}
+        \end{itemize}
     \end{itemize}
-    {\footnotesize Цель улучшения модели: покрытие релевантными темами как можно большего числа документов}
-\end{columns}
 
-\bigskip
-{\footnotesize Коллекция текстов основана на новостях с сайта Lenta.ru за период с $1999$ по $2019$ год. Для экспериментов используется часть из данного набора.}
+
 \end{frame}
 
 
