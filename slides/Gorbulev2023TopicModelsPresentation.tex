@@ -1,0 +1,144 @@
+\documentclass{beamer}
+\beamertemplatenavigationsymbolsempty
+\usecolortheme{beaver}
+\setbeamertemplate{blocks}[rounded=true, shadow=true]
+\setbeamertemplate{footline}[page number]
+%
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{amssymb,amsfonts,amsmath,mathtext}
+\usepackage{subfig}
+\usepackage[all]{xy} % xy package for diagrams
+\usepackage{array}
+\usepackage{multicol}% many columns in slide
+\usepackage{hyperref}% urls
+\usepackage{hhline}%tables
+% Your figures are here:
+\graphicspath{ {fig/} {../fig/} }
+
+\DeclareMathOperator*{\norm}{\text{norm}}
+
+%----------------------------------------------------------------------------------------------------------
+\title[\hbox to 56mm{Итеративное улучшение}]{Итеративное улучшение тематической \\ модели с обратной связью от пользователя}
+\author[А.\,И. Горбулев]{Алексей Ильич Горбулев}
+\institute{Московский физико-технический институт}
+\date{\footnotesize
+\par\smallskip\emph{Курс:} Моя первая научная статья/Группа Б05-021а
+% Консультировался с В. А. Алексеевым по следующему поводу, так как схема такова: студент с Алексеевым, Алексеев с Воронцовым
+\par\smallskip\emph{Эксперт:} д. ф.-м. н. К.\,В.~Воронцов
+\par\smallskip\emph{Консультант:} В.\,А.~Алексеев
+\par\bigskip\small 2023}
+%----------------------------------------------------------------------------------------------------------
+\begin{document}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}
+\thispagestyle{empty}
+\maketitle
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+
+\begin{frame}{Цель исследования}
+    \textbf{Цель исследования:} создать метод  регуляризации тематической модели для итеративного выделения релевантных тем.
+\end{frame}
+
+\begin{frame}{Обозначения}
+    \begin{itemize}
+        \item $D$ — множество (коллекция) документов
+        \item $W$ — множество термов \\ {\footnotesize Термами могут быть слова в нормальной форме, словосочетания. Каждый документ $d \in D$ представляет собой последовательность термов.}
+        \item $T$ — множество тем \\ {\footnotesize Как правило, количество тем $|T|$ заранее задано.}
+        \end{itemize}
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}{О тематическом моделировании и ARTM}
+
+При построении вероятностной тематической модели
+$$p (w \mid d) = \sum \limits_{t \in T} p (w \mid t) p (t \mid d) - \sum \limits_{t \in T} \varphi_{wt} \theta_{td}$$
+в подходе ARTM происходит максимизация $\log$ правдоподобия с $k$ регуляризаторами $R_i$:
+$$\sum \limits_{d, w} n_{dw} \ln \sum \limits_{t} \varphi_{wt} \theta_{td} + \sum \limits_{i = 1}^k \tau_i R_i (\Phi, \Theta) \to \max \limits_{\Phi, \Theta}$$
+
+\end{frame}
+
+\begin{frame}{О тематическом моделировании и ARTM}
+
+Далее применяется EM-алгоритм.
+
+\begin{itemize}
+    \item E-шаг:
+    $$p_{tdw} = \norm \limits_{t \in T} (\varphi_{wt} \theta_{td})$$
+    \item M-шаг: 
+    $$
+    \varphi_{wt} = \norm \limits_{w \in W} (n_{wt} + \varphi_{wt} \frac{\partial R}{\partial \varphi_{wt}})
+    $$
+    $$
+    \theta_{td} = \norm \limits_{t \in T} (n_{td} + \theta_{td} \frac{\partial R}{\partial \theta_{td}})
+    $$
+\end{itemize}
+
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{Постановка задачи}
+
+Пусть $D$ — коллекция документов, количество тем $|T|$ задано заранее. \\
+После обучения базовой тематической модели $M_0$ каждая из тем $t \in T$ отнесена пользователем в одну из трёх категорий:
+\begin{itemize}
+    \item $T_+$ (релевантные)
+    \item $T_0$ (нерелевантные)
+    \item $T_-$ («мусорные»)
+\end{itemize}
+После обучения новой тематической модели $M_1$ $|T_+|$ должно увеличиться, и должно быть сохранено как можно больше тем из $T_+$, а $|T_-|$ должно уменьшиться. Процесс продолжается итеративно.
+
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{Решение}
+На каждой итерации:
+\begin{itemize}
+    \item С помощью регуляризатора сглаживания зафиксировать столбцы матрицы $\Phi$, соответствующие релевантным темам, используя его с коэффициентом, равным ${10}^{10}$;
+    \item Для выявления новых релевантных тем предлагается использовать регуляризатор декоррелирования, действующий на столбцы матрицы $\Phi$, соответствующих темам из $T_-$ матрицу из которых обозначим через $\Phi_{new}$:
+        $$R (\Phi_{new}) = -\frac{\tau}{2} \sum \limits_{t \in (T_-^i)} \sum \limits_{s \in T_-^i \setminus t} \sum \limits_{w \in W} \varphi_{wt} \varphi_{ws}$$
+\end{itemize}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{Вычислительный эксперимент}
+
+% В процессе!
+
+% \includegraphics[width=0.8\textwidth]{ErrorFunction}
+
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{Заключение}
+    \begin{block}{Результаты:}
+    \begin{itemize}
+        \item предложен метод регуляризации тематической модели, способствующий её итеративному улучшению
+    \end{itemize}
+    \end{block}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{Литература}
+\begin{itemize}
+    \item Воронцов К.В. "Вероятностное тематическое моделирование: теория, модели, алгоритмы и проект BigARTM"
+    \item Victor Bulatov, Evgeny Egorov, Eugenia Veselova, Darya Polyudova, Vasiliy Alekseev, Alexey Goncharov, Konstantin Vorontsov. “TopicNet: Making Additive Regularisation for Topic Modelling Accessible”
+    \item Alekseev V. et al. "TopicBank: Collection of coherent topics using multiple model training with their further use for topic model validation"
+    \item Dobrynin V., Patterson D., Rooney N. "Contextual document clustering"
+\end{itemize}
+\end{frame}
+\end{document} 
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+
+
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{���������� ������}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{�������}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{�������������� �����������}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{����������}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\end{document} 
