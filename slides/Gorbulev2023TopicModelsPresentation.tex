@@ -14,7 +14,7 @@
 \usepackage{hyperref}% urls
 \usepackage{hhline}%tables
 % Your figures are here:
-\graphicspath{ {fig/} {../fig/} }
+\graphicspath{ {../figures/} }
 
 \DeclareMathOperator*{\norm}{\text{norm}}
 
@@ -38,25 +38,34 @@
 %-----------------------------------------------------------------------------------------------------
 
 \begin{frame}{Цель исследования}
-    \textbf{Цель исследования:} создать метод  регуляризации тематической модели для итеративного выделения релевантных тем.
+    \textbf{Мотивация:} тематические модели неустойчивы, неполны
+
+    \textbf{Цель исследования:} получить \textit{интерпретируемую} тематическую модель за некоторое число итераций
+
+    \textbf{Метод:} итеративное улучшение тематической модели c использованием регуляризаторов пользовательской разметки тем на релевантные, нерелевантные и <<мусорные>>
 \end{frame}
 
-\begin{frame}{Обозначения}
+\begin{frame}{Литература}
+\begin{itemize}
+    \item Alekseev V. et al. "TopicBank: Collection of coherent topics using multiple model training with their further use for topic model validation"
+    \item Victor Bulatov, Evgeny Egorov, Eugenia Veselova, Darya Polyudova, Vasiliy Alekseev, Alexey Goncharov, Konstantin Vorontsov. “TopicNet: Making Additive Regularisation for Topic Modelling Accessible”
+    \item Воронцов К.В. "Вероятностное тематическое моделирование: теория, модели, алгоритмы и проект BigARTM"
+\end{itemize}
+\end{frame}
+
+\begin{frame}{О тематическом моделировании и ARTM}
     \begin{itemize}
         \item $D$ — множество (коллекция) документов
         \item $W$ — множество термов \\ {\footnotesize Термами могут быть слова в нормальной форме, словосочетания. Каждый документ $d \in D$ представляет собой последовательность термов.}
         \item $T$ — множество тем \\ {\footnotesize Как правило, количество тем $|T|$ заранее задано.}
-        \end{itemize}
+    \end{itemize}
+
+    При построении вероятностной тематической модели
+    $$p (w \mid d) = \sum \limits_{t \in T} p (w \mid t) p (t \mid d) - \sum \limits_{t \in T} \varphi_{wt} \theta_{td}$$
+    в подходе ARTM происходит максимизация $\log$ правдоподобия с $k$ регуляризаторами $R_i$:
+    $$\sum \limits_{d, w} n_{dw} \ln \sum \limits_{t} \varphi_{wt} \theta_{td} + \sum \limits_{i = 1}^k \tau_i R_i (\Phi, \Theta) \to \max \limits_{\Phi, \Theta}$$
 \end{frame}
 %-----------------------------------------------------------------------------------------------------
-\begin{frame}{О тематическом моделировании и ARTM}
-
-При построении вероятностной тематической модели
-$$p (w \mid d) = \sum \limits_{t \in T} p (w \mid t) p (t \mid d) - \sum \limits_{t \in T} \varphi_{wt} \theta_{td}$$
-в подходе ARTM происходит максимизация $\log$ правдоподобия с $k$ регуляризаторами $R_i$:
-$$\sum \limits_{d, w} n_{dw} \ln \sum \limits_{t} \varphi_{wt} \theta_{td} + \sum \limits_{i = 1}^k \tau_i R_i (\Phi, \Theta) \to \max \limits_{\Phi, \Theta}$$
-
-\end{frame}
 
 \begin{frame}{О тематическом моделировании и ARTM}
 
@@ -81,9 +90,9 @@ $$\sum \limits_{d, w} n_{dw} \ln \sum \limits_{t} \varphi_{wt} \theta_{td} + \su
 Пусть $D$ — коллекция документов, количество тем $|T|$ задано заранее. \\
 После обучения базовой тематической модели $M_0$ каждая из тем $t \in T$ отнесена пользователем в одну из трёх категорий:
 \begin{itemize}
-    \item $T_+$ (релевантные)
-    \item $T_0$ (нерелевантные)
-    \item $T_-$ («мусорные»)
+    \item $T_+$ (релевантные, \textit{имеющие отношение к исследовани.})
+    \item $T_0$ (нерелевантные, \textit{дублирующие релевантные})
+    \item $T_-$ («мусорные», \textit{не имеющие отношение к исследованию})
 \end{itemize}
 После обучения новой тематической модели $M_1$ $|T_+|$ должно увеличиться, и должно быть сохранено как можно больше тем из $T_+$, а $|T_-|$ должно уменьшиться. Процесс продолжается итеративно.
 
@@ -92,36 +101,60 @@ $$\sum \limits_{d, w} n_{dw} \ln \sum \limits_{t} \varphi_{wt} \theta_{td} + \su
 \begin{frame}{Решение}
 На каждой итерации:
 \begin{itemize}
-    \item С помощью регуляризатора сглаживания зафиксировать столбцы матрицы $\Phi$, соответствующие релевантным темам, используя его с коэффициентом, равным ${10}^{10}$;
-    \item Для выявления новых релевантных тем предлагается использовать регуляризатор декоррелирования, действующий на столбцы матрицы $\Phi$, соответствующих темам из $T_-$ матрицу из которых обозначим через $\Phi_{new}$:
+    \item С помощью регуляризатора сглаживания
+    $$R (\Phi, \Theta) = \beta_0 \sum \limits_{t \in T_0} \sum \limits_{w \in W} \beta_{wt} \ln \varphi_{wt} + \alpha_0 \sum \limits_{d \in D_0} \sum \limits_{t \in T} \alpha_{td} \ln \theta_{td}$$
+    зафиксировать столбцы матрицы $\Phi$, соответствующие релевантным темам, используя с достаточно большим коэффициентом
+    \item Для выявления новых релевантных тем использовать регуляризатор декоррелирования, действующий на столбцы матрицы $\Phi$, соответствующих темам из $T_-$:
         $$R (\Phi_{new}) = -\frac{\tau}{2} \sum \limits_{t \in (T_-^i)} \sum \limits_{s \in T_-^i \setminus t} \sum \limits_{w \in W} \varphi_{wt} \varphi_{ws}$$
 \end{itemize}
 \end{frame}
 %----------------------------------------------------------------------------------------------------------
 \begin{frame}{Вычислительный эксперимент}
 
-% В процессе!
+В качестве коллекции текстов используется набор из $16 \ 449$ новостей, опубликованных на сайте Lenta.ru в период с мая по август $2008$-го года.
+Предполагается разделение на $100$ тем. 
 
-% \includegraphics[width=0.8\textwidth]{ErrorFunction}
+\begin{block}{Предобработка:}
+\begin{itemize}
+    \item Заголовок и текст каждой новости разбиваются на токены, далее происходит лемматизация.
+    \item Далее по PMI отбирается $10 \ 000$ биграмм, которые характеризуют коллекцию текстов.
+\end{itemize}
+\end{block}
+
+\textbf{Базовая модель:} TopicNet, $100$ тем, без регуляризаторов на темы \\
+\textbf{Новая модель:} TopicNet, $100$ тем, регуляризатор сглаживания для тем $T_+$ с $\tau = {10}^{10}$, регуляризатор декоррелирования для тем из $T_-$, а также регуляризатор улучшения когерентности и битермов
+
+\end{frame}
+
+\begin{frame}{Вычислительный эксперимент}
+
+\begin{columns}[c]
+\column{0.55\textwidth}
+\includegraphics[width=1\textwidth]{perplexity_v2}
+\includegraphics[width=1\textwidth]{sparsity_v2}
+\includegraphics[width=1\textwidth]{avg_contrast_v2}
+\column{0.45\textwidth}
+    \textbf{Критерии качества:} перплексия, разреженность $\Phi$, средняя контрастность тем, размеры групп $T_+$ и $T_-$.
+
+    {\footnotesize На базовой модели удалось выделить одну релевантную тему, все остальные оказались <<мусорными>>. }
+
+    {\footnotesize \textit{На данный момент работы продолжаются, пока после обучения новой модели разметка осталась той же.}}
+\end{columns}
 
 \end{frame}
 %----------------------------------------------------------------------------------------------------------
 \begin{frame}{Заключение}
     \begin{block}{Результаты:}
     \begin{itemize}
-        \item предложен метод регуляризации тематической модели, способствующий её итеративному улучшению
+        \item предложен метод итеративного улучшения тематической модели,
+        \item показано, как использовать регулятор сглаживания для сохранения тем из $T_+$,
+        \item предложен регуляризатор декоррелирования тем из $T_-$.
+        
     \end{itemize}
     \end{block}
 \end{frame}
 %----------------------------------------------------------------------------------------------------------
-\begin{frame}{Литература}
-\begin{itemize}
-    \item Воронцов К.В. "Вероятностное тематическое моделирование: теория, модели, алгоритмы и проект BigARTM"
-    \item Victor Bulatov, Evgeny Egorov, Eugenia Veselova, Darya Polyudova, Vasiliy Alekseev, Alexey Goncharov, Konstantin Vorontsov. “TopicNet: Making Additive Regularisation for Topic Modelling Accessible”
-    \item Alekseev V. et al. "TopicBank: Collection of coherent topics using multiple model training with their further use for topic model validation"
-    \item Dobrynin V., Patterson D., Rooney N. "Contextual document clustering"
-\end{itemize}
-\end{frame}
+
 \end{document} 
 \end{frame}
 %-----------------------------------------------------------------------------------------------------
