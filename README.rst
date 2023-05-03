@@ -1,18 +1,3 @@
-|test| |codecov| |docs|
-
-.. |test| image:: https://github.com/intsystems/ProjectTemplate/workflows/test/badge.svg
-    :target: https://github.com/intsystems/ProjectTemplate/tree/master
-    :alt: Test status
-    
-.. |codecov| image:: https://img.shields.io/codecov/c/github/intsystems/ProjectTemplate/master
-    :target: https://app.codecov.io/gh/intsystems/ProjectTemplate
-    :alt: Test coverage
-    
-.. |docs| image:: https://github.com/intsystems/ProjectTemplate/workflows/docs/badge.svg
-    :target: https://intsystems.github.io/ProjectTemplate/
-    :alt: Docs status
-
-
 .. class:: center
 
     :Название исследуемой задачи: Итеративное улучшение тематической модели с обратной связью от пользователя
@@ -24,7 +9,7 @@
 Abstract
 ========
 
-Purus sit amet luctus venenatis lectus magna fringilla. Condimentum id venenatis a condimentum vitae sapien. Auctor neque vitae tempus quam pellentesque nec nam aliquam. Eget egestas purus viverra accumsan in. Nam aliquam sem et tortor. Donec et odio pellentesque diam volutpat commodo. Odio pellentesque diam volutpat commodo sed egestas. Sit amet dictum sit amet justo. Pellentesque sit amet porttitor eget. Imperdiet sed euismod nisi porta lorem mollis aliquam ut. Quis varius quam quisque id diam vel quam elementum. Ornare lectus sit amet est placerat in. Vulputate dignissim suspendisse in est ante. Elit sed vulputate mi sit amet mauris. Egestas sed tempus urna et pharetra pharetra. Viverra tellus in hac habitasse platea dictumst vestibulum rhoncus.
+(RUS) В работе представлен метод тематического моделирования с использованием обратной связи от пользователя. Обратная связь заключается в определении принадлежности темы, полученной при тематическом моделировании, к одной из трёх категорий: релевантная, нерелевантная, <<мусорная>>. Основная задача состоит в улучшении базовой модели, которое заключается в выделении новых релевантных тем при сохранении выделенных тем и уменьшении числа <<мусорных>> тем. В работе предлагается решение с использованием библиотек тематического моделирования и регуляризаторов сглаживания и декоррелирования. Вычислительный эксперимент проводится на текстовой коллекции, основанной на новостях сайта Lenta.ru.
 
 Research publications
 ===============================
@@ -36,5 +21,4 @@ Presentations at conferences on the topic of research
 
 Software modules developed as part of the study
 ======================================================
-1. A python package *mylib* with all implementation `here <https://github.com/intsystems/ProjectTemplate/tree/master/src>`_.
-2. A code with all experiment visualisation `here <https://github.comintsystems/ProjectTemplate/blob/master/code>`_.
+1. A code with all experiment visualisation `here <https://github.comintsystems/ProjectTemplate/blob/master/code>`_.
