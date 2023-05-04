@@ -27,7 +27,7 @@
 % Консультировался с В. А. Алексеевым по следующему поводу, так как схема такова: студент с Алексеевым, Алексеев с Воронцовым
 \par\smallskip\emph{Эксперт:} д. ф.-м. н. К.\,В.~Воронцов
 \par\smallskip\emph{Консультант:} В.\,А.~Алексеев
-\par\bigskip\small 2023}
+\par\bigskip\small 4 мая 2023}
 %----------------------------------------------------------------------------------------------------------
 \begin{document}
 %----------------------------------------------------------------------------------------------------------
@@ -40,7 +40,7 @@
 \begin{frame}{Цель исследования}
     \textbf{Мотивация:} тематические модели неустойчивы, неполны
 
-    \textbf{Цель исследования:} получить \textit{интерпретируемую} тематическую модель за некоторое число итераций
+    \textbf{Цель исследования:} получить \textit{интерпретируемую} тематическую модель как результат итеративного улучшения в процессе обучения в процессе обучения нескольких моделей
 
     \textbf{Метод:} итеративное улучшение тематической модели c использованием регуляризаторов пользовательской разметки тем на релевантные, нерелевантные и <<мусорные>>
 \end{frame}
@@ -56,30 +56,35 @@
 \begin{frame}{О тематическом моделировании и ARTM}
     \begin{itemize}
         \item $D$ — множество (коллекция) документов
-        \item $W$ — множество термов \\ {\footnotesize Термами могут быть слова в нормальной форме, словосочетания. Каждый документ $d \in D$ представляет собой последовательность термов.}
-        \item $T$ — множество тем \\ {\footnotesize Как правило, количество тем $|T|$ заранее задано.}
+        \item $W$ — множество термов
+        \item $T$ — множество тем
     \end{itemize}
 
     При построении вероятностной тематической модели
-    $$p (w \mid d) = \sum \limits_{t \in T} p (w \mid t) p (t \mid d) - \sum \limits_{t \in T} \varphi_{wt} \theta_{td}$$
-    в подходе ARTM происходит максимизация $\log$ правдоподобия с $k$ регуляризаторами $R_i$:
-    $$\sum \limits_{d, w} n_{dw} \ln \sum \limits_{t} \varphi_{wt} \theta_{td} + \sum \limits_{i = 1}^k \tau_i R_i (\Phi, \Theta) \to \max \limits_{\Phi, \Theta}$$
+    $$p (w \mid d) = \sum \limits_{t \in T} p (w \mid t) p (t \mid d) = \sum \limits_{t \in T} \varphi_{wt} \theta_{td}$$
+    максизируется $\log$ правдоподобия с $k$ регуляризаторами $R_i$ \footnote{\href{http://www.machinelearning.ru/wiki/images/d/d5/Voron17survey-artm.pdf}{Воронцов К.В. "Вероятностное тематическое моделирование: теория, модели, алгоритмы и проект BigARTM"}}
+    $$\sum \limits_{d, w} n_{dw} \ln \sum \limits_{t \in T} \varphi_{wt} \theta_{td} + \sum \limits_{i = 1}^k \tau_i R_i (\Phi, \Theta) \to \max \limits_{\Phi, \Theta}$$
+    где $n_{dw}$ — число вхождений терма $w$ в документ $d$.
 \end{frame}
 %-----------------------------------------------------------------------------------------------------
 
 \begin{frame}{О тематическом моделировании и ARTM}
 
-Далее применяется EM-алгоритм.
+Решение — EM-алгоритм (метод простой итерации).
 
 \begin{itemize}
     \item E-шаг:
     $$p_{tdw} = \norm \limits_{t \in T} (\varphi_{wt} \theta_{td})$$
-    \item M-шаг: 
+    \item M-шаг:
     $$
-    \varphi_{wt} = \norm \limits_{w \in W} (n_{wt} + \varphi_{wt} \frac{\partial R}{\partial \varphi_{wt}})
-    $$
-    $$
+    \begin{cases}
+    \varphi_{wt} = \norm \limits_{w \in W} (n_{wt} + \varphi_{wt} \frac{\partial R}{\partial \varphi_{wt}}) \\
     \theta_{td} = \norm \limits_{t \in T} (n_{td} + \theta_{td} \frac{\partial R}{\partial \theta_{td}})
+    \end{cases}
+    $$
+    \item Оператор $\norm$\footnote{\href{http://www.machinelearning.ru/wiki/images/d/d5/Voron17survey-artm.pdf}{Воронцов К.В. "Вероятностное тематическое моделирование: теория, модели, алгоритмы и проект BigARTM"}} определяется как
+    $$
+    \norm \limits_{i \in I} (x_i) = \frac{{(x_i)}_+}{\sum \limits_{k \in I} {(x_k)}_+} \ \forall i \in I,\ {(x)}_+ = \max \{ 0, x \}
     $$
 \end{itemize}
 
@@ -94,26 +99,40 @@
     \item $T_0$ (нерелевантные, \textit{дублирующие релевантные})
     \item $T_-$ («мусорные», \textit{не имеющие отношение к исследованию})
 \end{itemize}
-После обучения новой тематической модели $M_1$ $|T_+|$ должно увеличиться, и должно быть сохранено как можно больше тем из $T_+$, а $|T_-|$ должно уменьшиться. Процесс продолжается итеративно.
+После обучения новой тематической модели $M_1$:
+
+\begin{itemize}
+    \item все темы из $T_+$ должны быть сохранены
+    \item $|T_+|$ должно увеличиться
+    \item $|T_-|$ должно уменьшиться
+\end{itemize}
+
+Процесс продолжается итеративно.
 
 \end{frame}
 %----------------------------------------------------------------------------------------------------------
+\begin{frame}{Схема}
+    \begin{figure}
+    \includegraphics[width=0.85\textwidth]{scheme}
+    \end{figure}
+\end{frame}
+
 \begin{frame}{Решение}
 На каждой итерации:
 \begin{itemize}
     \item С помощью регуляризатора сглаживания
-    $$R (\Phi, \Theta) = \beta_0 \sum \limits_{t \in T_0} \sum \limits_{w \in W} \beta_{wt} \ln \varphi_{wt} + \alpha_0 \sum \limits_{d \in D_0} \sum \limits_{t \in T} \alpha_{td} \ln \theta_{td}$$
-    зафиксировать столбцы матрицы $\Phi$, соответствующие релевантным темам, используя с достаточно большим коэффициентом
+    $$R (\Phi, \Theta) = \beta_0 \sum \limits_{t \in T_+} \sum \limits_{w \in W} \widetilde{\varphi}_{wt} \ln \varphi_{wt} $$
+    зафиксировать столбцы матрицы $\Phi$, соответствующие релевантным темам, используя с достаточно большим коэффициентом, $\beta_0 >> 1$
     \item Для выявления новых релевантных тем использовать регуляризатор декоррелирования, используя матрицу $\widetilde{\Phi}$ предыдущей модели:
-        $$R(\Phi) = -\tau \sum \limits_{t \in T_+} \sum \limits_{s \in T_-} \sum \limits_{w \in W} \varphi_{wt} \widetilde{\varphi}_{ws} \to \max$$
-        $$\varphi_{wt} = \norm \limits_{w \in W} \left(n_{wt} - \tau \varphi_{wt} [t \in T_+] \sum \limits_{s \in T_-} \widetilde{\varphi}_{ws}\right)$$
+        $$R(\Phi) = -\tau \sum \limits_{t \in T_i \cup T_0} \sum \limits_{s \in T_-} \sum \limits_{w \in W} \varphi_{wt} \widetilde{\varphi}_{ws} \to \max$$
+        $$\varphi_{wt} = \norm \limits_{w \in W} \left(n_{wt} - \tau \varphi_{wt} [t \in T_i \cup T_0] \sum \limits_{s \in T_-} \widetilde{\varphi}_{ws}\right)$$
 \end{itemize}
 \end{frame}
 %----------------------------------------------------------------------------------------------------------
 \begin{frame}{Вычислительный эксперимент}
 
-В качестве коллекции текстов используется набор из $16 \ 449$ новостей, опубликованных на сайте Lenta.ru в период с мая по август $2008$-го года.
-Предполагается разделение на $100$ тем. 
+В качестве коллекции текстов используется \href{https://disk.yandex.ru/d/DAdhmVB2eFkdBQ}{набор} из $16 \ 449$ новостей, опубликованных на сайте Lenta.ru в период с мая по август $2008$-го года.
+Предполагается разделение на $50$ тем.
 
 \begin{block}{Предобработка:}
 \begin{itemize}
@@ -122,26 +141,32 @@
 \end{itemize}
 \end{block}
 
-\textbf{Базовая модель:} TopicNet, $50$ предметных тем, без регуляризаторов на темы \\
-\textbf{Новая модель:} TopicNet, $50$ предметных тем, регуляризатор сглаживания для тем $T_+$ с $\tau = {10}^{9}$, регуляризатор декоррелирования для тем из $T_-$
+\end{frame}
 
-{\footnotesize \textit{Каждая последующая модель строится аналогично, используя данные модели на предыдущей итерации.}}
+\begin{frame}{Вычислительный эксперимент}
+
+\textbf{Базовая модель:} PLSA\footnote{“TopicNet: Making Additive Regularisation for
+Topic Modelling Accessible”}, $50$ предметных тем, без регуляризаторов на предметные темы \\
+\textbf{Новая модель:} PLSA, $50$ предметных тем, регуляризатор сглаживания для тем $T_+$ с $\tau = {10}^{9}$, регуляризатор декоррелирования для тем из $T_-$ с $\tau = 25$
+
+{\footnotesize \textit{Каждая последующая модель строится аналогично, используя данные предыдущей. Все модели обучаются в течение $50$ итераций.}}
 
 \end{frame}
 
 \begin{frame}{Вычислительный эксперимент}
-    \textbf{Внешний критерий:} количество тем в $T_+$, $T_0$, $T_-$.
+    \textbf{Внешний критерий:} количество тем в $T_+$,  $T_-$.
     
     {\footnotesize Чем больше $|T_+|$ и меньше $|T_-|$, тем лучше.}
 
     \textbf{Внутренние критерии:}
 
     \begin{itemize}
-        \item Перплексия
+        \item Перплексия \textit{(чем меньше, тем лучше)}
         $$\mathcal{P}_m (D; p) = \exp \left( - \frac{1}{n_m} \sum \limits_{d \in D} \sum \limits_{w \in W^m} n_{dw} \ln p (w \mid d) \right)$$
-        \item Разреженность матрицы $\Phi$
-        \item Средняя контрастность тем, где контрастность темы определяется как
-        $$\text{con}_t = \frac{1}{|W_t|} \sum \limits_{w \in W_t} p(t \mid w), \ W_t = \{ w \in W \mid \varphi_{wt} > \frac{1}{|W|} \}$$
+        \item Разреженность матрицы $\Phi$ \textit{(чем больше, тем лучше)}
+        \item Средняя контрастность тем \textit{(чем больше, тем лучше)}, где контрастность темы определяется как
+        $$\text{con}_t = \frac{1}{|W_t|} \sum \limits_{w \in W_t} p(t \mid w)$$
+        Ядро темы: $W_t = \{ w \in W \mid \varphi_{wt} > \frac{1}{|W|} \}$
     \end{itemize}
 \end{frame}
 
@@ -161,32 +186,37 @@
         \label{tab:my_label}
     \end{table}
 
-    На каждой итерации удалось сохранить ранее найденные релевантные темы.
+    На каждой итерации удалось сохранить ранее найденные релевантные темы, а также находить новые релевантные темы за счёт мусорных.
 
 \end{frame}
 
 \begin{frame}{Вычислительный эксперимент}
 
-\begin{columns}[c]
-\column{0.5\textwidth}
 \begin{figure}
-\includegraphics[width=0.75\textwidth]{perplexity_v3}
+\includegraphics[width=0.85\textwidth]{perplexity_v3}
 \caption{Перплексия}
 \end{figure}
 
-\column{0.5\textwidth}
-\begin{figure}
-\includegraphics[width=0.75\textwidth]{sparsity_v3}
-\caption{Разреженность $\Phi$}
-\end{figure}
-\end{columns}
+\end{frame}
+
+\begin{frame}{Вычислительный эксперимент}
 
 \begin{figure}
-\includegraphics[width=0.5\textwidth]{avg_contrast_v3}
+\includegraphics[width=0.85\textwidth]{sparsity_v3}
+\caption{Разреженность $\Phi$}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}{Вычислительный эксперимент}
+
+\begin{figure}
+\includegraphics[width=0.85\textwidth]{avg_contrast_v3}
 \caption{Средняя контрастность тем}
 \end{figure}
 
 \end{frame}
+
 %----------------------------------------------------------------------------------------------------------
 \begin{frame}{Заключение}
     \begin{block}{Результаты:}
@@ -195,6 +225,14 @@
         \item показано, как использовать регулятор сглаживания для сохранения тем из $T_+$,
         \item предложен регуляризатор декоррелирования тем из $T_-$.
         
+    \end{itemize}
+    \end{block}
+
+    \begin{block}{Планы:}
+    \begin{itemize}
+        \item провести эксперименты на коллекции специализированных текстов, чтобы исследовать универсальность метода,
+        \item понять, сколько нужно моделей для существенного увеличения числа релевантных тем,
+        \item исследовать динамику улучшения тематической модели.
     \end{itemize}
     \end{block}
 \end{frame}
